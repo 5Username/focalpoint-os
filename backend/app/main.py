@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from app.routers import briefs, travel, incidents, pdf_export, workspaces, geo, auth, analytics, invites
 from app.scheduler import start_scheduler, shutdown_scheduler, reload_schedules
 from app.db import init_db
+from app.middleware.rate_limit import RateLimitMiddleware
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -15,7 +16,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="FocalPoint OS",
     description="Advanced multi-tenant toolkit for NGO Security Focal Points",
-    version="0.7.0",
+    version="0.8.0",
     lifespan=lifespan
 )
 
@@ -26,6 +27,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Rate limit auth endpoints (20 requests / minute / IP)
+app.add_middleware(RateLimitMiddleware, max_requests=20, window_seconds=60)
 
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(briefs.router, prefix="/api/briefs", tags=["Weekly Briefs"])
@@ -42,10 +46,11 @@ def root():
     return {
         "name": "FocalPoint OS",
         "status": "online",
-        "version": "0.7.0",
+        "version": "0.8.0",
         "modules": [
             "user-login", "email-verification", "password-reset",
             "jwt-auth", "api-key-auth", "workspace-invites",
+            "rate-limiting", "rbac", "audit-csv-export",
             "weekly-briefs", "travel-risk-packs", "offline-incidents",
             "pdf-export", "html-email", "ethical-osint",
             "multi-tenant-workspaces", "role-based-access",

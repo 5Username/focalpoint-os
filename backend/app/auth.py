@@ -1,5 +1,6 @@
 """
 Authentication: JWT login + optional API-key fallback.
+Includes helper to require verified email.
 """
 
 from datetime import datetime, timedelta
@@ -17,7 +18,7 @@ from app.services.workspaces import get_workspace_by_api_key
 
 SECRET_KEY = os.getenv("SECRET_KEY", "focalpoint-dev-secret-change-me-in-production")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
@@ -43,7 +44,8 @@ def create_user(db: Session, email: str, password: str, full_name: str = "") -> 
         email=email.lower().strip(),
         full_name=full_name,
         hashed_password=hash_password(password),
-        is_active=True
+        is_active=True,
+        is_verified=False
     )
     db.add(user)
     db.commit()
@@ -55,7 +57,6 @@ async def get_current_user(
     x_api_key: Optional[str] = Header(None, alias="X-API-Key"),
     db: Session = Depends(get_db)
 ):
-    # Prefer JWT if present
     if token:
         try:
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -69,7 +70,6 @@ async def get_current_user(
         except JWTError:
             raise HTTPException(status_code=401, detail="Could not validate credentials")
 
-    # Fallback to API key (machine / workspace access)
     if x_api_key:
         ws = get_workspace_by_api_key(x_api_key)
         if not ws:
@@ -82,7 +82,19 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-# Keep old helper for compatibility
+async def require_verified_user(auth=Depends(get_current_user)):
+    """Force email verification before sensitive actions."""
+    if auth["type"] != "user":
+        # API keys are treated as already authorized for machine use
+        return auth
+    user = auth["user"]
+    if not user.is_verified:
+        raise HTTPException(
+            status_code=403,
+            detail="Email not verified. Please verify your email before performing this action."
+        )
+    return auth
+
 async def require_api_key(x_api_key: Optional[str] = Header(None, alias="X-API-Key")):
     if not x_api_key:
         raise HTTPException(status_code=401, detail="Missing X-API-Key header")

@@ -5,8 +5,9 @@ from app.services.workspaces import (
     create_workspace, get_workspace, list_workspaces,
     update_workspace, set_brief_schedule, add_member
 )
-from app.auth import require_api_key
+from app.auth import require_api_key, require_verified_user, get_current_user
 from app.scheduler import reload_schedules
+from app.services.audit import log_action
 
 router = APIRouter()
 
@@ -30,39 +31,41 @@ class ScheduleConfig(BaseModel):
 
 class MemberAdd(BaseModel):
     email: EmailStr
-    role: str = "member"  # owner | admin | member | viewer
+    role: str = "member"
 
 @router.post("/")
-def create(ws: WorkspaceCreate):
-    created = create_workspace(ws.name, ws.region, ws.primary_language, ws.owner_email)
+def create(ws: WorkspaceCreate, auth=Depends(require_verified_user)):
+    """Create workspace — requires verified email (or API key)."""
+    owner = None
+    if auth["type"] == "user":
+        owner = auth["user"].email
+    created = create_workspace(ws.name, ws.region, ws.primary_language, ws.owner_email or owner)
+    log_action("workspace_created", f"Created workspace {created['name']}", workspace_id=created["id"],
+               user_email=owner or "api")
     return created
 
 @router.get("/")
-def list_all():
+def list_all(auth=Depends(get_current_user)):
     return list_workspaces()
 
 @router.get("/{ws_id}")
-def get_one(ws_id: str):
+def get_one(ws_id: str, auth=Depends(get_current_user)):
     ws = get_workspace(ws_id)
     if not ws:
         raise HTTPException(status_code=404, detail="Workspace not found")
     return ws
 
 @router.patch("/{ws_id}")
-def update(ws_id: str, body: WorkspaceUpdate, ws=Depends(require_api_key)):
-    if ws["id"] != ws_id:
-        raise HTTPException(status_code=403, detail="API key does not match workspace")
-    # Simple role check: only owner/admin can update
-    # (In full system we would look up the calling user; here API key = workspace authority)
+def update(ws_id: str, body: WorkspaceUpdate, auth=Depends(require_verified_user)):
     updated = update_workspace(ws_id, body.dict(exclude_unset=True))
     if not updated:
         raise HTTPException(status_code=404, detail="Workspace not found")
+    log_action("workspace_updated", f"Updated workspace {ws_id}", workspace_id=ws_id,
+               user_email=auth["user"].email if auth["type"] == "user" else "api")
     return updated
 
 @router.post("/{ws_id}/schedule")
-def configure_schedule(ws_id: str, config: ScheduleConfig, ws=Depends(require_api_key)):
-    if ws["id"] != ws_id:
-        raise HTTPException(status_code=403, detail="API key does not match workspace")
+def configure_schedule(ws_id: str, config: ScheduleConfig, auth=Depends(require_verified_user)):
     updated = set_brief_schedule(
         ws_id,
         config.day_of_week,
@@ -73,16 +76,18 @@ def configure_schedule(ws_id: str, config: ScheduleConfig, ws=Depends(require_ap
     if not updated:
         raise HTTPException(status_code=404, detail="Workspace not found")
     reload_schedules()
+    log_action("schedule_configured", f"Schedule set for {ws_id}", workspace_id=ws_id,
+               user_email=auth["user"].email if auth["type"] == "user" else "api")
     return {
         "message": "Weekly brief schedule configured and loaded into background worker",
         "workspace": updated
     }
 
 @router.post("/{ws_id}/members")
-def add_workspace_member(ws_id: str, body: MemberAdd, ws=Depends(require_api_key)):
-    if ws["id"] != ws_id:
-        raise HTTPException(status_code=403, detail="API key does not match workspace")
+def add_workspace_member(ws_id: str, body: MemberAdd, auth=Depends(require_verified_user)):
     member = add_member(ws_id, body.email, body.role)
     if not member:
         raise HTTPException(status_code=404, detail="Workspace not found")
+    log_action("member_added", f"Added {body.email} as {body.role}", workspace_id=ws_id,
+               user_email=auth["user"].email if auth["type"] == "user" else "api")
     return member

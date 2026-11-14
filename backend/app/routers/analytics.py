@@ -1,7 +1,9 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Response
 from app.services.workspaces import get_workspace_analytics, list_workspaces
 from app.services.audit import get_workspace_audit, get_recent_audit
 from app.auth import get_current_user
+import csv
+import io
 
 router = APIRouter()
 
@@ -34,3 +36,22 @@ def analytics_summary(auth=Depends(get_current_user)):
         ],
         "recent_activity": get_recent_audit(limit=15)
     }
+
+@router.get("/workspaces/{ws_id}/audit.csv")
+def export_audit_csv(ws_id: str, auth=Depends(get_current_user)):
+    """Export workspace audit log as CSV."""
+    rows = get_workspace_audit(ws_id, limit=500)
+    if not rows and not get_workspace_analytics(ws_id):
+        raise HTTPException(status_code=404, detail="Workspace not found")
+
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=["id", "action", "details", "user_email", "created_at"])
+    writer.writeheader()
+    for r in rows:
+        writer.writerow(r)
+
+    return Response(
+        content=output.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=audit-{ws_id}.csv"}
+    )
