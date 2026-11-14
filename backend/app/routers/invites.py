@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
-from typing import Optional
 from datetime import datetime, timedelta
 import secrets
 import uuid
 
-from app.db import get_db, InviteModel, WorkspaceModel, WorkspaceMemberModel, SessionLocal
-from app.auth import get_current_user, require_api_key
+from app.db import SessionLocal, InviteModel, WorkspaceModel, WorkspaceMemberModel
+from app.auth import get_current_user, require_verified_user
 from app.services.audit import log_action
 from app.services.email import send_brief_email
+from app.services.rbac import require_roles
 
 router = APIRouter()
 
@@ -20,9 +20,14 @@ class InviteAccept(BaseModel):
     token: str
 
 @router.post("/workspaces/{ws_id}/invites")
-async def create_invite(ws_id: str, body: InviteCreate, auth=Depends(get_current_user)):
+async def create_invite(ws_id: str, body: InviteCreate, auth=Depends(require_verified_user)):
+    """Only owner or admin can create invites."""
     if body.role not in ("admin", "member", "viewer"):
         body.role = "member"
+
+    if auth["type"] == "user":
+        # Stricter RBAC: only owner/admin may invite
+        require_roles(ws_id, auth["user"].email, ["owner", "admin"])
 
     db = SessionLocal()
     try:
@@ -37,18 +42,27 @@ async def create_invite(ws_id: str, body: InviteCreate, auth=Depends(get_current
             email=body.email.lower(),
             role=body.role,
             token=token,
-            invited_by=auth.get("user").email if auth.get("type") == "user" else "api",
+            invited_by=auth["user"].email if auth["type"] == "user" else "api",
             expires_at=datetime.utcnow() + timedelta(days=7)
         )
         db.add(invite)
         db.commit()
 
         invite_link = f"http://localhost:5173/accept-invite?token={token}"
-        text = f"You have been invited to join the workspace '{ws.name}' on FocalPoint OS.\n\nRole: {body.role}\n\nAccept the invite here:\n{invite_link}\n\nOr use token: {token}\n\nThis invite expires in 7 days."
+        text = (
+            f"You have been invited to join the workspace '{ws.name}' on FocalPoint OS.\n\n"
+            f"Role: {body.role}\n\n"
+            f"Accept the invite here:\n{invite_link}\n\n"
+            f"Or use token: {token}\n\nThis invite expires in 7 days."
+        )
         await send_brief_email([body.email], f"Invitation to {ws.name} on FocalPoint", text, None)
 
-        log_action("invite_created", f"Invited {body.email} as {body.role}", workspace_id=ws_id,
-                   user_email=auth.get("user").email if auth.get("type") == "user" else "api")
+        log_action(
+            "invite_created",
+            f"Invited {body.email} as {body.role}",
+            workspace_id=ws_id,
+            user_email=auth["user"].email if auth["type"] == "user" else "api"
+        )
 
         return {
             "id": invite.id,
@@ -77,7 +91,6 @@ def accept_invite(body: InviteAccept, auth=Depends(get_current_user)):
         if invite.expires_at and invite.expires_at < datetime.utcnow():
             raise HTTPException(status_code=400, detail="Invite has expired")
 
-        # Create membership
         member = WorkspaceMemberModel(
             id=str(uuid.uuid4())[:8],
             workspace_id=invite.workspace_id,
@@ -89,8 +102,12 @@ def accept_invite(body: InviteAccept, auth=Depends(get_current_user)):
         invite.accepted = True
         db.commit()
 
-        log_action("invite_accepted", f"{user.email} joined as {invite.role}",
-                   workspace_id=invite.workspace_id, user_email=user.email)
+        log_action(
+            "invite_accepted",
+            f"{user.email} joined as {invite.role}",
+            workspace_id=invite.workspace_id,
+            user_email=user.email
+        )
 
         return {
             "message": "Invite accepted successfully",
@@ -102,6 +119,10 @@ def accept_invite(body: InviteAccept, auth=Depends(get_current_user)):
 
 @router.get("/workspaces/{ws_id}/invites")
 def list_invites(ws_id: str, auth=Depends(get_current_user)):
+    if auth["type"] == "user":
+        # Only owner/admin can list invites
+        require_roles(ws_id, auth["user"].email, ["owner", "admin"])
+
     db = SessionLocal()
     try:
         rows = db.query(InviteModel).filter(InviteModel.workspace_id == ws_id).all()

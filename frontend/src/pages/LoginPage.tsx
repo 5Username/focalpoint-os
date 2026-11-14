@@ -60,6 +60,20 @@ export default function LoginPage() {
         </button>
       </form>
 
+      <div className="mt-6 space-y-3">
+        <p className="text-sm text-slate-500 text-center">Or continue with</p>
+        <div className="grid grid-cols-2 gap-3">
+          <a href="http://localhost:8000/api/oauth/google/login"
+            className="text-center text-sm border border-slate-700 rounded-lg py-2.5 hover:bg-slate-900 transition">
+            Google
+          </a>
+          <a href="http://localhost:8000/api/oauth/microsoft/login"
+            className="text-center text-sm border border-slate-700 rounded-lg py-2.5 hover:bg-slate-900 transition">
+            Microsoft
+          </a>
+        </div>
+      </div>
+
       <div className="mt-6 text-sm text-slate-400 space-y-2">
         <p>No account? <Link to="/register" className="text-indigo-400 hover:underline">Register</Link></p>
         <p><Link to="/forgot-password" className="text-indigo-400 hover:underline">Forgot password?</Link></p>

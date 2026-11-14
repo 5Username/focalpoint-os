@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from app.routers import briefs, travel, incidents, pdf_export, workspaces, geo, auth, analytics, invites
+from app.routers import briefs, travel, incidents, pdf_export, workspaces, geo, auth, analytics, invites, oauth
 from app.scheduler import start_scheduler, shutdown_scheduler, reload_schedules
 from app.db import init_db
 from app.middleware.rate_limit import RateLimitMiddleware
@@ -16,7 +16,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="FocalPoint OS",
     description="Advanced multi-tenant toolkit for NGO Security Focal Points",
-    version="0.8.0",
+    version="0.9.0",
     lifespan=lifespan
 )
 
@@ -28,10 +28,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Rate limit auth endpoints (20 requests / minute / IP)
 app.add_middleware(RateLimitMiddleware, max_requests=20, window_seconds=60)
 
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
+app.include_router(oauth.router, prefix="/api/oauth", tags=["OAuth / OIDC"])
 app.include_router(briefs.router, prefix="/api/briefs", tags=["Weekly Briefs"])
 app.include_router(travel.router, prefix="/api/travel", tags=["Travel Risk Packs"])
 app.include_router(incidents.router, prefix="/api/incidents", tags=["Incident Reports"])
@@ -46,11 +46,12 @@ def root():
     return {
         "name": "FocalPoint OS",
         "status": "online",
-        "version": "0.8.0",
+        "version": "0.9.0",
         "modules": [
             "user-login", "email-verification", "password-reset",
-            "jwt-auth", "api-key-auth", "workspace-invites",
-            "rate-limiting", "rbac", "audit-csv-export",
+            "jwt-auth", "api-key-auth", "oauth-google-microsoft",
+            "workspace-invites", "strict-rbac",
+            "rate-limiting", "audit-csv-export",
             "weekly-briefs", "travel-risk-packs", "offline-incidents",
             "pdf-export", "html-email", "ethical-osint",
             "multi-tenant-workspaces", "role-based-access",
