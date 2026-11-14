@@ -1,5 +1,5 @@
 """
-Workspace service backed by SQLite (or Postgres via DATABASE_URL).
+Workspace service with SQLite/Postgres persistence + analytics helpers.
 """
 
 from typing import Dict, Any, List, Optional
@@ -21,6 +21,12 @@ def _to_dict(ws: WorkspaceModel, include_key: bool = True) -> Dict[str, Any]:
         "region": ws.region,
         "primary_language": ws.primary_language,
         "created_at": ws.created_at.isoformat() + "Z" if ws.created_at else None,
+        "analytics": {
+            "briefs_generated": ws.briefs_generated or 0,
+            "incidents_logged": ws.incidents_logged or 0,
+            "last_brief_at": ws.last_brief_at.isoformat() + "Z" if ws.last_brief_at else None,
+            "member_count": len(ws.members or [])
+        },
         "settings": {
             "brief_schedule": {
                 "enabled": ws.schedule_enabled,
@@ -52,7 +58,6 @@ def create_workspace(name: str, region: str = "Kenya", primary_language: str = "
             api_key=api_key
         )
         db.add(ws)
-
         if owner_email:
             member = WorkspaceMemberModel(
                 id=str(uuid.uuid4())[:8],
@@ -61,7 +66,6 @@ def create_workspace(name: str, region: str = "Kenya", primary_language: str = "
                 role="owner"
             )
             db.add(member)
-
         db.commit()
         db.refresh(ws)
         return _to_dict(ws, include_key=True)
@@ -167,3 +171,36 @@ def add_member(ws_id: str, email: str, role: str = "member") -> Optional[Dict[st
         return {"id": member.id, "email": email, "role": role}
     finally:
         db.close()
+
+def increment_brief_counter(ws_id: str):
+    db = SessionLocal()
+    try:
+        ws = db.query(WorkspaceModel).filter(WorkspaceModel.id == ws_id).first()
+        if ws:
+            ws.briefs_generated = (ws.briefs_generated or 0) + 1
+            ws.last_brief_at = datetime.utcnow()
+            db.commit()
+    finally:
+        db.close()
+
+def increment_incident_counter(ws_id: str):
+    db = SessionLocal()
+    try:
+        ws = db.query(WorkspaceModel).filter(WorkspaceModel.id == ws_id).first()
+        if ws:
+            ws.incidents_logged = (ws.incidents_logged or 0) + 1
+            db.commit()
+    finally:
+        db.close()
+
+def get_workspace_analytics(ws_id: str) -> Optional[Dict[str, Any]]:
+    ws = get_workspace(ws_id)
+    if not ws:
+        return None
+    return {
+        "workspace_id": ws_id,
+        "name": ws["name"],
+        "analytics": ws.get("analytics", {}),
+        "schedule": ws.get("settings", {}).get("brief_schedule"),
+        "member_count": len(ws.get("members", []))
+    }

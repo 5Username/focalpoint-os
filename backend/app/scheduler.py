@@ -1,5 +1,5 @@
 """
-Background scheduler using APScheduler + email delivery.
+Background scheduler + HTML email delivery + analytics counters.
 """
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -8,9 +8,9 @@ from datetime import datetime
 import logging
 import asyncio
 
-from app.services.workspaces import get_all_enabled_schedules
+from app.services.workspaces import get_all_enabled_schedules, increment_brief_counter
 from app.services.osint import build_brief_sections
-from app.services.email import send_brief_email
+from app.services.email import send_brief_email, render_brief_html
 
 logger = logging.getLogger("focalpoint.scheduler")
 scheduler = BackgroundScheduler()
@@ -21,11 +21,18 @@ def _run_brief_job(workspace: dict, notify_emails: list):
         name = workspace.get("name", "Unknown NGO")
         sections = build_brief_sections(region)
 
-        # Build plain-text body
-        lines = [
-            f"Weekly Security Brief — {name}",
+        data = {
+            "title": f"Weekly Security Brief — {name}",
+            "region": region,
+            "generated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
+            "sections": sections
+        }
+
+        # Plain text fallback
+        text_lines = [
+            data["title"],
             f"Region: {region}",
-            f"Generated: {datetime.utcnow().isoformat()}Z",
+            f"Generated: {data['generated_at']}",
             "",
             "EXECUTIVE SUMMARY",
             sections.get("executive_summary", ""),
@@ -33,18 +40,20 @@ def _run_brief_job(workspace: dict, notify_emails: list):
             "RECOMMENDATIONS"
         ]
         for r in sections.get("recommendations", []):
-            lines.append(f"• {r}")
-        lines.append("")
-        lines.append("This is a research and coordination product compiled from public sources.")
-        lines.append("It is not licensed security advice.")
+            text_lines.append(f"• {r}")
+        text_lines.append("")
+        text_lines.append("This is a research and coordination product compiled from public sources.")
+        text_body = "\n".join(text_lines)
 
-        body = "\n".join(lines)
+        html_body = render_brief_html(data)
         subject = f"[FocalPoint] Weekly Security Brief — {name} ({region})"
 
-        # Send email (run async from sync job)
-        asyncio.run(send_brief_email(notify_emails, subject, body))
+        asyncio.run(send_brief_email(notify_emails, subject, text_body, html_body))
 
-        logger.info(f"[Scheduler] Brief generated and emailed for {name}")
+        # Update analytics
+        increment_brief_counter(workspace["id"])
+
+        logger.info(f"[Scheduler] Brief generated + emailed for {name}")
         print(f"[FocalPoint Scheduler] Brief generated for: {name}")
     except Exception as e:
         logger.error(f"[Scheduler] Failed for {workspace.get('name')}: {e}")
@@ -72,7 +81,7 @@ def reload_schedules():
             replace_existing=True,
             name=f"Weekly brief for {ws['name']}"
         )
-        logger.info(f"Registered job {job_id} → {ws['name']} ({cron_day} {hour}:00) emails={emails}")
+        logger.info(f"Registered job {job_id} → {ws['name']}")
 
 def start_scheduler():
     if not scheduler.running:
