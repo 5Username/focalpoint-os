@@ -4,14 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FocalPoint OS — NGO Security Focal Point Toolkit</title>
-  <meta name="description" content="Professional toolkit for NGO Security Focal Points: Weekly briefs, Travel Risk Packs, Offline Incident Logging, and Humanitarian Crisis Overview. Built for Kenya, East Africa and humanitarian contexts." />
+  <meta name="description" content="Professional multi-tenant toolkit for NGO Security Focal Points. Weekly briefs, Travel Risk Packs, Offline Incident Logging, Crisis Mapping, Analytics, and more. Built for Kenya, East Africa and humanitarian contexts." />
+  <meta name="theme-color" content="#0f172a" />
   <style>
     :root {
       --bg: #020617;
       --card: #0f172a;
       --accent: #818cf8;
+      --accent2: #a5b4fc;
       --text: #e2e8f0;
       --muted: #94a3b8;
+      --border: #1e293b;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -21,49 +24,127 @@
       line-height: 1.6;
       min-height: 100vh;
     }
-    .container { max-width: 900px; margin: 0 auto; padding: 2rem 1.25rem; }
-    header { text-align: center; margin-bottom: 3rem; }
-    h1 { font-size: 2.4rem; color: var(--accent); margin-bottom: 0.5rem; }
-    .tagline { color: var(--muted); font-size: 1.15rem; max-width: 600px; margin: 0 auto; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1.25rem;
-      margin: 2.5rem 0;
-    }
-    .card {
-      background: var(--card);
-      border: 1px solid #1e293b;
-      border-radius: 1rem;
-      padding: 1.5rem;
-    }
-    .card h3 { color: var(--accent); margin-bottom: 0.5rem; }
-    .card p { color: var(--muted); font-size: 0.95rem; }
-    .cta {
-      display: inline-block;
-      margin-top: 1.5rem;
-      background: #4f46e5;
-      color: white;
-      padding: 0.85rem 1.75rem;
-      border-radius: 0.6rem;
-      text-decoration: none;
-      font-weight: 600;
-    }
-    .cta:hover { background: #6366f1; }
-    footer {
-      text-align: center;
-      margin-top: 4rem;
-      color: #64748b;
-      font-size: 0.85rem;
-    }
+    .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.25rem; }
+    header { text-align: center; margin-bottom: 3rem; padding-top: 1rem; }
     .badge {
       display: inline-block;
       background: #1e293b;
       color: var(--accent);
       font-size: 0.75rem;
-      padding: 0.25rem 0.6rem;
+      font-weight: 600;
+      padding: 0.35rem 0.85rem;
       border-radius: 999px;
+      margin-bottom: 1.25rem;
+      letter-spacing: 0.02em;
+    }
+    h1 {
+      font-size: clamp(2rem, 5vw, 2.75rem);
+      color: var(--accent2);
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.02em;
+    }
+    .tagline {
+      color: var(--muted);
+      font-size: 1.15rem;
+      max-width: 620px;
+      margin: 0 auto 1.75rem;
+    }
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+    }
+    .cta {
+      display: inline-block;
+      background: #4f46e5;
+      color: white;
+      padding: 0.85rem 1.6rem;
+      border-radius: 0.6rem;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: background 0.15s;
+    }
+    .cta:hover { background: #6366f1; }
+    .cta.secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .cta.secondary:hover { border-color: var(--accent); color: var(--accent2); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.1rem;
+      margin: 2.75rem 0;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.4rem;
+    }
+    .card h3 {
+      color: var(--accent2);
+      font-size: 1.05rem;
+      margin-bottom: 0.45rem;
+    }
+    .card p {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .section-title {
+      font-size: 1.15rem;
+      color: var(--accent2);
       margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .features {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .features ul {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.6rem 1.5rem;
+    }
+    .features li {
+      color: var(--muted);
+      font-size: 0.92rem;
+      padding-left: 1.1rem;
+      position: relative;
+    }
+    .features li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #34d399;
+      font-weight: 700;
+    }
+
+    .note {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 1.5rem;
+      line-height: 1.5;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 3.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      color: #64748b;
+      font-size: 0.85rem;
     }
   </style>
 </head>
@@ -73,15 +154,18 @@
       <div class="badge">Open Source • Humanitarian • Field-Ready</div>
       <h1>FocalPoint OS</h1>
       <p class="tagline">
-        Professional toolkit for NGO Security Focal Points in Kenya, East Africa and humanitarian contexts worldwide.
+        Professional multi-tenant toolkit for NGO Security Focal Points in Kenya, East Africa and humanitarian contexts worldwide.
       </p>
-      <a class="cta" href="https://github.com/5Username/focalpoint-os">View on GitHub</a>
+      <div class="cta-row">
+        <a class="cta" href="https://github.com/5Username/focalpoint-os">View on GitHub</a>
+        <a class="cta secondary" href="https://github.com/5Username/focalpoint-os#quick-start">Quick Start</a>
+      </div>
     </header>
 
     <div class="grid">
       <div class="card">
         <h3>Weekly Security Briefs</h3>
-        <p>Structured briefs compiled from public sources for busy SFPs. PDF export included.</p>
+        <p>Structured briefs from public sources. PDF export + HTML email delivery.</p>
       </div>
       <div class="card">
         <h3>Travel Risk Packs</h3>
@@ -89,23 +173,51 @@
       </div>
       <div class="card">
         <h3>Offline Incident Logger</h3>
-        <p>Works without internet. Syncs later to Google Sheets.</p>
+        <p>Works without internet. Syncs later. Built for real field conditions.</p>
       </div>
       <div class="card">
         <h3>Crisis Overview + Map</h3>
-        <p>Lightweight humanitarian context with simple public map layer.</p>
+        <p>Humanitarian context with markers, polygons and heatmap layers.</p>
       </div>
     </div>
 
-    <div class="card" style="text-align:center;">
-      <h3>Multi-language • Docker one-click • Ethical OSINT</h3>
-      <p style="margin-top:0.75rem;">English • Kiswahili • Français • العربية</p>
-      <p style="margin-top:0.5rem;font-size:0.9rem;">Designed for real field conditions and international NGO teams.</p>
+    <h2 class="section-title">Built for real NGO operations</h2>
+    <div class="features">
+      <ul>
+        <li>Multi-tenant workspaces</li>
+        <li>User login + Google OAuth</li>
+        <li>Email verification & password reset</li>
+        <li>Workspace invite links</li>
+        <li>Role-based access (owner/admin/member/viewer)</li>
+        <li>Scheduled weekly briefs</li>
+        <li>Analytics dashboard + audit log</li>
+        <li>CSV export of audit logs</li>
+        <li>Redis rate limiting</li>
+        <li>SQLite or Postgres</li>
+        <li>Multi-language (EN / SW / FR / AR)</li>
+        <li>One-click Docker Compose</li>
+      </ul>
     </div>
 
+    <div class="card" style="text-align:center;">
+      <h3 style="margin-bottom:0.6rem;">This is the public landing page</h3>
+      <p style="color:var(--muted);font-size:0.95rem;">
+        The full application (login, briefs, incidents, dashboard) runs as a complete backend + frontend system.<br>
+        See the repository README for local and production deployment instructions.
+      </p>
+      <div class="cta-row" style="margin-top:1.25rem;">
+        <a class="cta" href="https://github.com/5Username/focalpoint-os">Open Repository</a>
+      </div>
+    </div>
+
+    <p class="note">
+      FocalPoint OS is a research and coordination tool only.<br>
+      It does not provide licensed security advice.
+    </p>
+
     <footer>
-      Research & coordination tool only. Not licensed security advice.<br />
-      MIT License • Built for humanitarian and NGO field reality.
+      MIT License • Built for humanitarian and NGO field reality<br>
+      <a href="https://github.com/5Username/focalpoint-os" style="color:#818cf8;text-decoration:none;">github.com/5Username/focalpoint-os</a>
     </footer>
   </div>
 </body>
