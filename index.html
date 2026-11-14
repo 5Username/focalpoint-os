@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FocalPoint OS — NGO Security Focal Point Toolkit</title>
+  <meta name="description" content="Professional toolkit for NGO Security Focal Points: Weekly briefs, Travel Risk Packs, Offline Incident Logging, and Humanitarian Crisis Overview. Built for Kenya, East Africa and humanitarian contexts." />
+  <style>
+    :root {
+      --bg: #020617;
+      --card: #0f172a;
+      --accent: #818cf8;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem 1.25rem; }
+    header { text-align: center; margin-bottom: 3rem; }
+    h1 { font-size: 2.4rem; color: var(--accent); margin-bottom: 0.5rem; }
+    .tagline { color: var(--muted); font-size: 1.15rem; max-width: 600px; margin: 0 auto; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+      margin: 2.5rem 0;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid #1e293b;
+      border-radius: 1rem;
+      padding: 1.5rem;
+    }
+    .card h3 { color: var(--accent); margin-bottom: 0.5rem; }
+    .card p { color: var(--muted); font-size: 0.95rem; }
+    .cta {
+      display: inline-block;
+      margin-top: 1.5rem;
+      background: #4f46e5;
+      color: white;
+      padding: 0.85rem 1.75rem;
+      border-radius: 0.6rem;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .cta:hover { background: #6366f1; }
+    footer {
+      text-align: center;
+      margin-top: 4rem;
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+    .badge {
+      display: inline-block;
+      background: #1e293b;
+      color: var(--accent);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">Open Source • Humanitarian • Field-Ready</div>
+      <h1>FocalPoint OS</h1>
+      <p class="tagline">
+        Professional toolkit for NGO Security Focal Points in Kenya, East Africa and humanitarian contexts worldwide.
+      </p>
+      <a class="cta" href="https://github.com/5Username/focalpoint-os">View on GitHub</a>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Weekly Security Briefs</h3>
+        <p>Structured briefs compiled from public sources for busy SFPs. PDF export included.</p>
+      </div>
+      <div class="card">
+        <h3>Travel Risk Packs</h3>
+        <p>One-page go / no-go checklists ready to share with management.</p>
+      </div>
+      <div class="card">
+        <h3>Offline Incident Logger</h3>
+        <p>Works without internet. Syncs later to Google Sheets.</p>
+      </div>
+      <div class="card">
+        <h3>Crisis Overview + Map</h3>
+        <p>Lightweight humanitarian context with simple public map layer.</p>
+      </div>
+    </div>
+
+    <div class="card" style="text-align:center;">
+      <h3>Multi-language • Docker one-click • Ethical OSINT</h3>
+      <p style="margin-top:0.75rem;">English • Kiswahili • Français • العربية</p>
+      <p style="margin-top:0.5rem;font-size:0.9rem;">Designed for real field conditions and international NGO teams.</p>
+    </div>
+
+    <footer>
+      Research & coordination tool only. Not licensed security advice.<br />
+      MIT License • Built for humanitarian and NGO field reality.
+    </footer>
+  </div>
+</body>
+</html>

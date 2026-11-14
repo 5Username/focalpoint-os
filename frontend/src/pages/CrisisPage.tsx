@@ -1,12 +1,61 @@
+import { useEffect, useRef } from 'react'
 import { useLang } from '../App'
 import { t } from '../i18n'
 
 export default function CrisisPage() {
   const { lang } = useLang()
+  const mapRef = useRef<HTMLDivElement>(null)
+  const mapInstance = useRef<any>(null)
 
-  // Demo data — in production this would come from the ethical OSINT service
+  useEffect(() => {
+    // Load Leaflet from CDN for simplicity and reliability
+    if (typeof window === 'undefined' || !mapRef.current) return
+
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
+    document.head.appendChild(link)
+
+    const script = document.createElement('script')
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+    script.onload = () => {
+      // @ts-ignore
+      const L = window.L
+      if (!L || mapInstance.current) return
+
+      const map = L.map(mapRef.current).setView([0.5, 38], 6) // Kenya-focused default
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map)
+
+      // Example public hotspot markers (illustrative only)
+      const points = [
+        { lat: 0.45, lng: 39.65, title: 'Garissa area', note: 'Elevated attention (public sources)' },
+        { lat: 3.1, lng: 35.6, title: 'Turkana / West Pokot zone', note: 'Ongoing monitoring' },
+        { lat: -1.3, lng: 36.8, title: 'Nairobi urban', note: 'Standard urban risk profile' }
+      ]
+
+      points.forEach(p => {
+        L.marker([p.lat, p.lng])
+          .addTo(map)
+          .bindPopup(`<strong>${p.title}</strong><br/>${p.note}`)
+      })
+
+      mapInstance.current = map
+    }
+    document.body.appendChild(script)
+
+    return () => {
+      if (mapInstance.current) {
+        mapInstance.current.remove()
+        mapInstance.current = null
+      }
+    }
+  }, [])
+
   const overview = {
-    region: 'East Africa',
+    region: 'East Africa / Kenya focus',
     summary: 'Public humanitarian indicators remain elevated in several areas. This overview is compiled exclusively from open sources for coordination purposes.',
     themes: [
       { theme: 'Food security', status: 'Stressed in several zones', trend: 'stable' },
@@ -17,11 +66,18 @@ export default function CrisisPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-2">{t(lang, 'crisis')}</h1>
-      <p className="text-slate-400 mb-8 text-sm">
-        Lightweight humanitarian context overview for coordination (public sources only).
+      <p className="text-slate-400 mb-6 text-sm">
+        Lightweight humanitarian context overview + simple public map layer (illustrative).
       </p>
+
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden mb-6">
+        <div ref={mapRef} style={{ height: '360px', width: '100%' }} />
+        <div className="p-3 text-xs text-slate-500 border-t border-slate-800">
+          Map data © OpenStreetMap contributors • Markers are illustrative public-context points only
+        </div>
+      </div>
 
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6">
         <div>
@@ -48,10 +104,6 @@ export default function CrisisPage() {
           {t(lang, 'disclaimer')}
         </p>
       </div>
-
-      <p className="mt-6 text-sm text-slate-500">
-        Future versions will support simple map layers (Leaflet) and GeoJSON export of public hotspot areas.
-      </p>
     </div>
   )
 }
