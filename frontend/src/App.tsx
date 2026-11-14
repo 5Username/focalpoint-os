@@ -5,7 +5,13 @@ import TravelPage from './pages/TravelPage'
 import IncidentsPage from './pages/IncidentsPage'
 import CrisisPage from './pages/CrisisPage'
 import WorkspacesPage from './pages/WorkspacesPage'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
+import DashboardPage from './pages/DashboardPage'
 import { t, availableLanguages, Lang } from './i18n'
+import { getUser } from './lib/auth'
 
 const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({
   lang: 'en',
@@ -19,6 +25,7 @@ export function useLang() {
 function Nav() {
   const location = useLocation()
   const { lang, setLang } = useLang()
+  const user = getUser()
 
   const linkClass = (path: string) =>
     `px-3 py-2 rounded-lg text-sm font-medium transition ${
@@ -40,6 +47,11 @@ function Nav() {
           <Link to="/incidents" className={linkClass('/incidents')}>{t(lang, 'incidents')}</Link>
           <Link to="/crisis" className={linkClass('/crisis')}>{t(lang, 'crisis')}</Link>
           <Link to="/workspaces" className={linkClass('/workspaces')}>Workspaces</Link>
+          {user ? (
+            <Link to="/dashboard" className={linkClass('/dashboard')}>Dashboard</Link>
+          ) : (
+            <Link to="/login" className={linkClass('/login')}>Sign in</Link>
+          )}
 
           <select
             value={lang}
@@ -66,7 +78,7 @@ function Home() {
           {t(lang, 'appName')}
         </h1>
         <p className="text-slate-400 text-lg max-w-2xl">
-          {t(lang, 'tagline')}. Multi-tenant • Offline capable • PDF export • Map layers • Scheduled briefs.
+          {t(lang, 'tagline')}. Multi-tenant • Analytics • Login • Scheduled briefs • Map layers.
         </p>
       </header>
 
@@ -76,29 +88,30 @@ function Home() {
           <h2 className="text-lg font-semibold text-indigo-300">{t(lang, 'briefs')}</h2>
           <p className="text-slate-500 text-sm mt-2">Structured security updates + PDF</p>
         </Link>
-
         <Link to="/travel" className="group p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition">
           <div className="text-2xl mb-3">✈️</div>
           <h2 className="text-lg font-semibold text-indigo-300">{t(lang, 'travel')}</h2>
           <p className="text-slate-500 text-sm mt-2">One-page go / no-go checklists</p>
         </Link>
-
         <Link to="/incidents" className="group p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition">
           <div className="text-2xl mb-3">📱</div>
           <h2 className="text-lg font-semibold text-indigo-300">{t(lang, 'incidents')}</h2>
           <p className="text-slate-500 text-sm mt-2">Offline-first field reporting</p>
         </Link>
-
         <Link to="/crisis" className="group p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition">
           <div className="text-2xl mb-3">🗺️</div>
           <h2 className="text-lg font-semibold text-indigo-300">{t(lang, 'crisis')}</h2>
           <p className="text-slate-500 text-sm mt-2">Map layers + GeoJSON export</p>
         </Link>
-
         <Link to="/workspaces" className="group p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition">
           <div className="text-2xl mb-3">🏢</div>
           <h2 className="text-lg font-semibold text-indigo-300">Workspaces</h2>
           <p className="text-slate-500 text-sm mt-2">Multi-tenant NGO management</p>
+        </Link>
+        <Link to="/dashboard" className="group p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition">
+          <div className="text-2xl mb-3">📊</div>
+          <h2 className="text-lg font-semibold text-indigo-300">Dashboard</h2>
+          <p className="text-slate-500 text-sm mt-2">Analytics + audit log</p>
         </Link>
       </div>
 
@@ -124,6 +137,11 @@ export default function App() {
             <Route path="/incidents" element={<IncidentsPage />} />
             <Route path="/crisis" element={<CrisisPage />} />
             <Route path="/workspaces" element={<WorkspacesPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
           </Routes>
         </div>
       </BrowserRouter>

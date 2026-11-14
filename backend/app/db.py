@@ -1,8 +1,9 @@
 """
 Database layer — SQLite by default, Postgres when DATABASE_URL is set.
+Includes users, workspaces, members, and audit log.
 """
 
-from sqlalchemy import create_engine, Column, String, DateTime, Boolean, Integer, Text, ForeignKey, Float
+from sqlalchemy import create_engine, Column, String, DateTime, Boolean, Integer, Text, ForeignKey
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship
 from datetime import datetime
 import os
@@ -24,6 +25,8 @@ class UserModel(Base):
     full_name = Column(String(255), default="")
     hashed_password = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True)
+    reset_token = Column(String(64), nullable=True)
+    reset_token_expires = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     memberships = relationship("WorkspaceMemberModel", back_populates="user")
@@ -44,12 +47,12 @@ class WorkspaceModel(Base):
     schedule_timezone = Column(String(50), default="Africa/Nairobi")
     notify_emails = Column(Text, default="")
 
-    # Simple analytics counters
     briefs_generated = Column(Integer, default=0)
     incidents_logged = Column(Integer, default=0)
     last_brief_at = Column(DateTime, nullable=True)
 
     members = relationship("WorkspaceMemberModel", back_populates="workspace", cascade="all, delete-orphan")
+    audit_logs = relationship("AuditLogModel", back_populates="workspace", cascade="all, delete-orphan")
 
 class WorkspaceMemberModel(Base):
     __tablename__ = "workspace_members"
@@ -58,11 +61,23 @@ class WorkspaceMemberModel(Base):
     workspace_id = Column(String(16), ForeignKey("workspaces.id"), nullable=False)
     user_id = Column(String(16), ForeignKey("users.id"), nullable=True)
     email = Column(String(255), nullable=False)
-    role = Column(String(20), default="member")  # owner | admin | member | viewer
+    role = Column(String(20), default="member")
     created_at = Column(DateTime, default=datetime.utcnow)
 
     workspace = relationship("WorkspaceModel", back_populates="members")
     user = relationship("UserModel", back_populates="memberships")
+
+class AuditLogModel(Base):
+    __tablename__ = "audit_logs"
+
+    id = Column(String(16), primary_key=True)
+    workspace_id = Column(String(16), ForeignKey("workspaces.id"), nullable=True)
+    user_email = Column(String(255), default="system")
+    action = Column(String(100), nullable=False)
+    details = Column(Text, default="")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    workspace = relationship("WorkspaceModel", back_populates="audit_logs")
 
 def init_db():
     Base.metadata.create_all(bind=engine)

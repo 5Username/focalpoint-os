@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from app.services.workspaces import get_workspace_analytics, list_workspaces
+from app.services.audit import get_workspace_audit, get_recent_audit
 from app.auth import get_current_user
 
 router = APIRouter()
@@ -9,6 +10,7 @@ def workspace_analytics(ws_id: str, auth=Depends(get_current_user)):
     data = get_workspace_analytics(ws_id)
     if not data:
         raise HTTPException(status_code=404, detail="Workspace not found")
+    data["recent_activity"] = get_workspace_audit(ws_id, limit=20)
     return data
 
 @router.get("/summary")
@@ -25,8 +27,10 @@ def analytics_summary(auth=Depends(get_current_user)):
                 "id": w["id"],
                 "name": w["name"],
                 "briefs": w.get("analytics", {}).get("briefs_generated", 0),
-                "incidents": w.get("analytics", {}).get("incidents_logged", 0)
+                "incidents": w.get("analytics", {}).get("incidents_logged", 0),
+                "last_brief_at": w.get("analytics", {}).get("last_brief_at")
             }
             for w in workspaces
-        ]
+        ],
+        "recent_activity": get_recent_audit(limit=15)
     }
