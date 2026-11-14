@@ -1,6 +1,6 @@
 """
 Database layer — SQLite by default, Postgres when DATABASE_URL is set.
-Includes users, workspaces, members, and audit log.
+Includes users, workspaces, members, audit log, and invites.
 """
 
 from sqlalchemy import create_engine, Column, String, DateTime, Boolean, Integer, Text, ForeignKey
@@ -25,6 +25,8 @@ class UserModel(Base):
     full_name = Column(String(255), default="")
     hashed_password = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True)
+    is_verified = Column(Boolean, default=False)
+    verification_token = Column(String(64), nullable=True)
     reset_token = Column(String(64), nullable=True)
     reset_token_expires = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -53,6 +55,7 @@ class WorkspaceModel(Base):
 
     members = relationship("WorkspaceMemberModel", back_populates="workspace", cascade="all, delete-orphan")
     audit_logs = relationship("AuditLogModel", back_populates="workspace", cascade="all, delete-orphan")
+    invites = relationship("InviteModel", back_populates="workspace", cascade="all, delete-orphan")
 
 class WorkspaceMemberModel(Base):
     __tablename__ = "workspace_members"
@@ -78,6 +81,21 @@ class AuditLogModel(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     workspace = relationship("WorkspaceModel", back_populates="audit_logs")
+
+class InviteModel(Base):
+    __tablename__ = "invites"
+
+    id = Column(String(16), primary_key=True)
+    workspace_id = Column(String(16), ForeignKey("workspaces.id"), nullable=False)
+    email = Column(String(255), nullable=False)
+    role = Column(String(20), default="member")
+    token = Column(String(64), unique=True, nullable=False)
+    invited_by = Column(String(255), default="")
+    accepted = Column(Boolean, default=False)
+    expires_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    workspace = relationship("WorkspaceModel", back_populates="invites")
 
 def init_db():
     Base.metadata.create_all(bind=engine)

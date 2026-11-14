@@ -9,6 +9,8 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
+import VerifyEmailPage from './pages/VerifyEmailPage'
+import AcceptInvitePage from './pages/AcceptInvitePage'
 import DashboardPage from './pages/DashboardPage'
 import { t, availableLanguages, Lang } from './i18n'
 import { getUser } from './lib/auth'
@@ -78,7 +80,7 @@ function Home() {
           {t(lang, 'appName')}
         </h1>
         <p className="text-slate-400 text-lg max-w-2xl">
-          {t(lang, 'tagline')}. Multi-tenant • Analytics • Login • Scheduled briefs • Map layers.
+          {t(lang, 'tagline')}. Multi-tenant • Analytics • Invites • Email verification • Scheduled briefs.
         </p>
       </header>
 
@@ -142,6 +144,8 @@ export default function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
+            <Route path="/accept-invite" element={<AcceptInvitePage />} />
           </Routes>
         </div>
       </BrowserRouter>

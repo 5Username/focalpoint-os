@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from app.routers import briefs, travel, incidents, pdf_export, workspaces, geo, auth, analytics
+from app.routers import briefs, travel, incidents, pdf_export, workspaces, geo, auth, analytics, invites
 from app.scheduler import start_scheduler, shutdown_scheduler, reload_schedules
 from app.db import init_db
 
@@ -14,8 +14,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="FocalPoint OS",
-    description="Advanced multi-tenant toolkit for NGO Security Focal Points with user login, analytics, HTML email, and Postgres support",
-    version="0.6.0",
+    description="Advanced multi-tenant toolkit for NGO Security Focal Points",
+    version="0.7.0",
     lifespan=lifespan
 )
 
@@ -35,23 +35,30 @@ app.include_router(pdf_export.router, prefix="/api/pdf", tags=["PDF Export"])
 app.include_router(workspaces.router, prefix="/api/workspaces", tags=["NGO Workspaces"])
 app.include_router(geo.router, prefix="/api/geo", tags=["GeoJSON & Mapping"])
 app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"])
+app.include_router(invites.router, prefix="/api/invites", tags=["Invites"])
 
 @app.get("/")
 def root():
     return {
         "name": "FocalPoint OS",
         "status": "online",
-        "version": "0.6.0",
+        "version": "0.7.0",
         "modules": [
-            "user-login", "jwt-auth", "api-key-auth",
+            "user-login", "email-verification", "password-reset",
+            "jwt-auth", "api-key-auth", "workspace-invites",
             "weekly-briefs", "travel-risk-packs", "offline-incidents",
             "pdf-export", "html-email", "ethical-osint",
             "multi-tenant-workspaces", "role-based-access",
             "crisis-mapping", "geojson-export",
             "brief-scheduling", "background-worker",
-            "workspace-analytics", "sqlite-postgres"
+            "workspace-analytics", "audit-log",
+            "sqlite-postgres"
         ]
     }
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "service": "focalpoint-os"}
 
 @app.post("/api/admin/reload-schedules")
 def admin_reload_schedules():
