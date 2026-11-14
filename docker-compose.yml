@@ -13,6 +13,12 @@ services:
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
   backend:
     build:
       context: ./backend
@@ -22,11 +28,17 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=postgresql://focalpoint:focalpoint@db:5432/focalpoint
+      - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=change-me-in-production
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - OAUTH_REDIRECT_BASE=http://localhost:8000
+      - FRONTEND_URL=http://localhost:5173
     volumes:
       - ./backend:/app
     depends_on:
       - db
+      - redis
     restart: unless-stopped
 
   frontend:

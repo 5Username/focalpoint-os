@@ -5,9 +5,10 @@ from app.services.workspaces import (
     create_workspace, get_workspace, list_workspaces,
     update_workspace, set_brief_schedule, add_member
 )
-from app.auth import require_api_key, require_verified_user, get_current_user
+from app.auth import require_verified_user, get_current_user
 from app.scheduler import reload_schedules
 from app.services.audit import log_action
+from app.services.rbac import require_roles
 
 router = APIRouter()
 
@@ -35,7 +36,6 @@ class MemberAdd(BaseModel):
 
 @router.post("/")
 def create(ws: WorkspaceCreate, auth=Depends(require_verified_user)):
-    """Create workspace — requires verified email (or API key)."""
     owner = None
     if auth["type"] == "user":
         owner = auth["user"].email
@@ -57,6 +57,8 @@ def get_one(ws_id: str, auth=Depends(get_current_user)):
 
 @router.patch("/{ws_id}")
 def update(ws_id: str, body: WorkspaceUpdate, auth=Depends(require_verified_user)):
+    if auth["type"] == "user":
+        require_roles(ws_id, auth["user"].email, ["owner", "admin"])
     updated = update_workspace(ws_id, body.dict(exclude_unset=True))
     if not updated:
         raise HTTPException(status_code=404, detail="Workspace not found")
@@ -66,6 +68,10 @@ def update(ws_id: str, body: WorkspaceUpdate, auth=Depends(require_verified_user
 
 @router.post("/{ws_id}/schedule")
 def configure_schedule(ws_id: str, config: ScheduleConfig, auth=Depends(require_verified_user)):
+    """Only owner or admin can change the weekly brief schedule."""
+    if auth["type"] == "user":
+        require_roles(ws_id, auth["user"].email, ["owner", "admin"])
+
     updated = set_brief_schedule(
         ws_id,
         config.day_of_week,
@@ -85,6 +91,10 @@ def configure_schedule(ws_id: str, config: ScheduleConfig, auth=Depends(require_
 
 @router.post("/{ws_id}/members")
 def add_workspace_member(ws_id: str, body: MemberAdd, auth=Depends(require_verified_user)):
+    """Only owner or admin can directly add members."""
+    if auth["type"] == "user":
+        require_roles(ws_id, auth["user"].email, ["owner", "admin"])
+
     member = add_member(ws_id, body.email, body.role)
     if not member:
         raise HTTPException(status_code=404, detail="Workspace not found")

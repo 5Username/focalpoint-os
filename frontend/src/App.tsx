@@ -12,6 +12,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage'
 import VerifyEmailPage from './pages/VerifyEmailPage'
 import AcceptInvitePage from './pages/AcceptInvitePage'
 import DashboardPage from './pages/DashboardPage'
+import OAuthCallbackPage from './pages/OAuthCallbackPage'
 import { t, availableLanguages, Lang } from './i18n'
 import { getUser } from './lib/auth'
 
@@ -80,7 +81,7 @@ function Home() {
           {t(lang, 'appName')}
         </h1>
         <p className="text-slate-400 text-lg max-w-2xl">
-          {t(lang, 'tagline')}. Multi-tenant • Analytics • Invites • Email verification • Scheduled briefs.
+          {t(lang, 'tagline')}. Google login • Redis rate limiting • Strict RBAC • Full NGO toolkit.
         </p>
       </header>
 
@@ -146,6 +147,7 @@ export default function App() {
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route path="/accept-invite" element={<AcceptInvitePage />} />
+            <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
           </Routes>
         </div>
       </BrowserRouter>
