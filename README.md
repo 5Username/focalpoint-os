@@ -1,6 +1,6 @@
 # FocalPoint OS
 
-**Professional toolkit for NGO Security Focal Points (SFPs) in Kenya, East Africa and humanitarian contexts worldwide.**
+**Advanced toolkit for NGO Security Focal Points (SFPs) in Kenya, East Africa and humanitarian contexts worldwide.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://python.org)
@@ -13,38 +13,18 @@
 
 ---
 
-## Why FocalPoint OS?
+## Core Capabilities
 
-NGO Security Focal Points are time-poor. They need:
-
-- Fast weekly situation overviews from **public sources only**
-- Clean travel risk decisions they can share with management
-- Simple incident logging that actually works **offline**
-
-Most tools are either too heavy or too basic. This one is designed to be practical.
-
----
-
-## Core Modules
-
-| Module | Purpose | Typical Price (Kenya) |
-|--------|---------|-----------------------|
-| **Weekly Security Brief** | Structured brief from ethical public OSINT | KES 3,000–5,000 / month |
-| **Travel Risk Pack** | One-page go / no-go checklist | KES 1,000 per pack |
-| **Offline Incident Logger** | Field form → Google Sheets sync | KES 5,000 setup + 2,000/month |
-
----
-
-## Key Features
-
-- **Multi-language** (English, Kiswahili, French, Arabic) — ready for international NGOs & humanitarian teams
-- **One-click Docker** setup
-- **Offline-first** Incident module (Service Worker + local queue)
-- **Ethical public OSINT** layer (attribution required, no private data)
-- **PDF-ready** outputs (browser Print → Save as PDF)
-- **Google Sheets** integration path
-- Clean TypeScript + Python architecture
-- Mobile-first, field-friendly UI
+| Module | Description |
+|--------|-------------|
+| **Weekly Security Briefs** | Structured briefs from ethical public OSINT + PDF export |
+| **Travel Risk Packs** | One-page go/no-go checklists + PDF |
+| **Offline Incident Logger** | Field form that works offline → Google Sheets path |
+| **Crisis Overview + Map** | Humanitarian context with Leaflet map |
+| **Multi-tenant Workspaces** | Separate NGO workspaces with own settings |
+| **GeoJSON Export** | Download illustrative public hotspot data |
+| **Brief Scheduling** | Configure automated weekly brief generation |
+| **Multi-language** | English • Kiswahili • Français • العربية |
 
 ---
 
@@ -56,61 +36,22 @@ cd focalpoint-os
 docker compose up --build
 ```
 
-Then open:
 - Frontend: http://localhost:5173
-- Backend API: http://localhost:8000
+- Backend:  http://localhost:8000
+- API docs: http://localhost:8000/docs
 
-See `docs/DEPLOY.md` for manual setup and GitHub Pages instructions.
-
----
-
-## Language Support
-
-| Code | Language |
-|------|----------|
-| `en` | English |
-| `sw` | Kiswahili |
-| `fr` | Fran\u00e7ais |
-| `ar` | \u0627\u0644\u0639\u0631\u0628\u064a\u0629 |
-
-Ideal for organisations working across East Africa, Francophone Africa and the Middle East / North Africa.
+See `docs/DOCKER.md` and `docs/ADVANCED.md` for full details.
 
 ---
 
-## Ethical OSINT Approach
+## Advanced Features
 
-- Only publicly available sources
-- Clear attribution
-- No login walls, no private APIs without consent
-- Designed for coordination and research, **not** licensed intelligence products
-
----
-
-## Project Structure
-
-```
-focalpoint-os/
-├── backend/          # Python FastAPI + ethical OSINT services
-├── frontend/         # TypeScript + React + PWA + i18n
-├── samples/          # Professional example outputs
-├── docs/             # Architecture + Deploy guides
-├── docker-compose.yml
-└── README.md
-```
-
----
-
-## Roadmap
-
-- [x] Multi-language support (EN / SW / FR / AR)
-- [x] One-click Docker
-- [x] Offline PWA + queue
-- [x] Ethical OSINT service layer
-- [x] Professional sample outputs
-- [x] Google Sheets path
-- [ ] Full PDF generation service
-- [ ] More public source connectors (ReliefWeb, etc.)
-- [ ] Multi-tenant NGO workspaces
+- **Multi-tenant NGO workspaces** — each organisation can have its own space and settings
+- **Automated weekly brief scheduling** — configure day/time per workspace
+- **GeoJSON export** of illustrative public hotspot data
+- **Leaflet map** on the Crisis module
+- **Server-side PDF generation** (ReportLab)
+- **Ethical public OSINT** layer with attribution
 
 ---
 
