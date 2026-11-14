@@ -1,11 +1,22 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from app.routers import briefs, travel, incidents, pdf_export, workspaces, geo
+from app.scheduler import start_scheduler, shutdown_scheduler, reload_schedules
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    start_scheduler()
+    yield
+    # Shutdown
+    shutdown_scheduler()
 
 app = FastAPI(
     title="FocalPoint OS",
-    description="Advanced toolkit for NGO Security Focal Points — multi-tenant workspaces, weekly briefs, travel risk packs, offline incidents, PDF export, ethical OSINT, crisis mapping & GeoJSON",
-    version="0.4.0"
+    description="Advanced multi-tenant toolkit for NGO Security Focal Points",
+    version="0.5.0",
+    lifespan=lifespan
 )
 
 app.add_middleware(
@@ -28,16 +39,17 @@ def root():
     return {
         "name": "FocalPoint OS",
         "status": "online",
-        "version": "0.4.0",
+        "version": "0.5.0",
         "modules": [
-            "weekly-briefs",
-            "travel-risk-packs",
-            "offline-incidents",
-            "pdf-export",
-            "ethical-osint",
-            "multi-tenant-workspaces",
-            "crisis-mapping",
-            "geojson-export",
-            "brief-scheduling"
+            "weekly-briefs", "travel-risk-packs", "offline-incidents",
+            "pdf-export", "ethical-osint", "multi-tenant-workspaces",
+            "api-key-auth", "crisis-mapping", "geojson-export",
+            "brief-scheduling", "background-worker"
         ]
     }
+
+@app.post("/api/admin/reload-schedules")
+def admin_reload_schedules():
+    """Manually reload all workspace schedules into the background worker."""
+    reload_schedules()
+    return {"status": "ok", "message": "Schedules reloaded"}

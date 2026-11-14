@@ -4,6 +4,7 @@ import BriefsPage from './pages/BriefsPage'
 import TravelPage from './pages/TravelPage'
 import IncidentsPage from './pages/IncidentsPage'
 import CrisisPage from './pages/CrisisPage'
+import WorkspacesPage from './pages/WorkspacesPage'
 import { t, availableLanguages, Lang } from './i18n'
 
 const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({
@@ -38,12 +39,12 @@ function Nav() {
           <Link to="/travel" className={linkClass('/travel')}>{t(lang, 'travel')}</Link>
           <Link to="/incidents" className={linkClass('/incidents')}>{t(lang, 'incidents')}</Link>
           <Link to="/crisis" className={linkClass('/crisis')}>{t(lang, 'crisis')}</Link>
+          <Link to="/workspaces" className={linkClass('/workspaces')}>Workspaces</Link>
 
           <select
             value={lang}
             onChange={(e) => setLang(e.target.value as Lang)}
             className="ml-2 bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg px-2 py-1.5"
-            aria-label={t(lang, 'language')}
           >
             {availableLanguages.map((l) => (
               <option key={l.code} value={l.code}>{l.label}</option>
@@ -65,15 +66,15 @@ function Home() {
           {t(lang, 'appName')}
         </h1>
         <p className="text-slate-400 text-lg max-w-2xl">
-          {t(lang, 'tagline')}. Clean outputs. Offline capable. Built for real field conditions.
+          {t(lang, 'tagline')}. Multi-tenant • Offline capable • PDF export • Map layers • Scheduled briefs.
         </p>
       </header>
 
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <Link to="/briefs" className="group p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition">
           <div className="text-2xl mb-3">📋</div>
           <h2 className="text-lg font-semibold text-indigo-300">{t(lang, 'briefs')}</h2>
-          <p className="text-slate-500 text-sm mt-2">Structured security updates for busy SFPs</p>
+          <p className="text-slate-500 text-sm mt-2">Structured security updates + PDF</p>
         </Link>
 
         <Link to="/travel" className="group p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition">
@@ -91,7 +92,13 @@ function Home() {
         <Link to="/crisis" className="group p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition">
           <div className="text-2xl mb-3">🗺️</div>
           <h2 className="text-lg font-semibold text-indigo-300">{t(lang, 'crisis')}</h2>
-          <p className="text-slate-500 text-sm mt-2">Humanitarian context overview</p>
+          <p className="text-slate-500 text-sm mt-2">Map layers + GeoJSON export</p>
+        </Link>
+
+        <Link to="/workspaces" className="group p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition">
+          <div className="text-2xl mb-3">🏢</div>
+          <h2 className="text-lg font-semibold text-indigo-300">Workspaces</h2>
+          <p className="text-slate-500 text-sm mt-2">Multi-tenant NGO management</p>
         </Link>
       </div>
 
@@ -116,6 +123,7 @@ export default function App() {
             <Route path="/travel" element={<TravelPage />} />
             <Route path="/incidents" element={<IncidentsPage />} />
             <Route path="/crisis" element={<CrisisPage />} />
+            <Route path="/workspaces" element={<WorkspacesPage />} />
           </Routes>
         </div>
       </BrowserRouter>
