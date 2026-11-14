@@ -2,111 +2,123 @@
 
 **Professional toolkit for NGO Security Focal Points (SFPs) in Kenya & East Africa.**
 
-Three core modules in one clean, modular system:
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
+[![PWA Ready](https://img.shields.io/badge/PWA-Offline%20Capable-green.svg)](#)
 
-1. **Weekly Security Brief Generator**  
-   Automated collection of public OSINT sources + clean formatting for busy SFPs.  
-   Price target: KES 3,000–5,000 / month per NGO.
-
-2. **Travel Risk Pack Compiler**  
-   One-page branded go/no-go checklist for any destination using public risk data.  
-   Price: KES 1,000 per pack.
-
-3. **Offline Incident Report System**  
-   Field-ready form that works without internet, then syncs to Google Sheets.  
-   Setup: KES 5,000 + KES 2,000/month.
+> Built for real field conditions — low bandwidth, intermittent connectivity, and busy Security Focal Points who need clean outputs fast.
 
 ---
 
-## Why this exists
-NGO Security Focal Points are often stretched thin. They need fast, reliable, low-bandwidth tools that actually work in the field — not another heavy dashboard.
+## The Problem
+NGO Security Focal Points are time-poor. They need:
+- Fast weekly situation overviews
+- Clean travel risk decisions
+- Simple incident logging that works offline
 
-FocalPoint OS is designed for:
-- Low connectivity environments
-- Rapid briefing generation
-- Simple field incident logging
-- Clear, professional outputs that can be shared with management or donors
-
-> This is a research & coordination tool only. It does not provide licensed security advice.
+Most tools are either too heavy or too basic. FocalPoint OS is designed to be practical.
 
 ---
 
-## Architecture (Multi-language by design)
+## Three Core Modules
 
-```
-focalpoint-os/
-├── backend/          # Python (FastAPI)
-│   ├── app/
-│   ├── services/      # OSINT collectors, risk compilers, sheet sync
-│   └── ...
-├── frontend/         # TypeScript + Vite + Tailwind (PWA ready)
-├── shared/           # Types & schemas (TypeScript + Python models)
-├── scripts/          # CLI tools & automation
-├── docs/
-└── docker/           # Easy local + production deploy
-```
-
-**Languages & Tech intentionally mixed for quality + stars:**
-- **Python** — Backend, OSINT, data processing, Google Sheets
-- **TypeScript** — Modern frontend + type safety
-- **HTML/CSS/JS** — Offline-capable PWA core
-- **Shell + Docker** — Deployment & automation
-- **Markdown + JSON** — Configuration & briefs
+| Module | What it does | Pricing (Kenya) |
+|--------|--------------|-----------------|
+| **Weekly Security Brief** | Structured brief from public sources | KES 3,000–5,000 / month |
+| **Travel Risk Pack** | One-page go / no-go checklist | KES 1,000 per pack |
+| **Offline Incident Logger** | Field form → Google Sheets sync | KES 5,000 setup + 2,000/month |
 
 ---
 
-## Quick Start (Development)
+## Features
 
+- **Multi-language architecture**: Python (FastAPI) + TypeScript (React + Vite + Tailwind)
+- **Offline-first Incident module** (Service Worker + local queue)
+- **Google Sheets ready** (service account + OAuth path)
+- Clean, professional outputs suitable for Country Directors and donors
+- Mobile-first design
+- Clear separation between research/coordination and licensed advice
+
+---
+
+## Quick Start
+
+### Backend
 ```bash
-# Backend
 cd backend
 python -m venv .venv
-source .venv/bin/activate   # or .venv\Scripts\activate on Windows
+source .venv/bin/activate
 pip install -r requirements.txt
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --port 8000
+```
 
-# Frontend
+### Frontend
+```bash
 cd frontend
 npm install
 npm run dev
 ```
 
----
-
-## Modules Overview
-
-### 1. Weekly Security Brief
-- Pulls from public sources (news, government advisories, open threat intel)
-- Structures into clean weekly format
-- Export as Markdown / PDF / email-ready
-- Designed for SFPs who only have 15 minutes on Monday morning
-
-### 2. Travel Risk Pack
-- Input: Destination + travel dates + organization profile
-- Output: One-page branded checklist (go / no-go / mitigate)
-- Sources: Public travel advisories, crime stats, health, political risk
-
-### 3. Offline Incident Logger
-- Works fully offline (Service Worker + local storage)
-- Syncs to Google Sheet when connection returns
-- Simple form optimized for field staff on phones
-- Categories: Security, Medical, Logistics, Safeguarding, Other
+Open http://localhost:5173
 
 ---
 
-## Roadmap for High GitHub Visibility
-- [x] Clean modular architecture
-- [ ] Full offline PWA for Incident module
-- [ ] Sample weekly brief templates (Kenya + regional)
-- [ ] Google Sheets OAuth + service account support
-- [ ] CLI for bulk Travel Risk Packs
-- [ ] Docker Compose one-command deploy
-- [ ] Contribution guide + good first issues
-- [ ] Example outputs that look professional
+## Project Structure
+
+```
+focalpoint-os/
+├── backend/               # Python FastAPI
+│   ├── app/
+│   │   ├── routers/       # briefs, travel, incidents
+│   │   └── services/      # Google Sheets, OSINT stubs
+│   └── requirements.txt
+├── frontend/              # TypeScript + React + PWA
+│   ├── src/
+│   │   ├── pages/         # Briefs, Travel, Incidents
+│   │   ├── components/
+│   │   └── lib/           # offline queue, api
+│   ├── public/            # manifest + service worker
+│   └── ...
+├── samples/               # Professional example outputs
+├── docs/
+└── README.md
+```
+
+---
+
+## Sample Outputs
+
+See the `/samples` folder for:
+- Example Weekly Security Brief (Markdown)
+- Example Travel Risk Pack (one-page style)
+
+These are designed to look professional enough to forward internally.
+
+---
+
+## Roadmap
+
+- [x] Clean multi-language architecture
+- [x] Full frontend modules
+- [x] Offline PWA support for incidents
+- [x] Google Sheets service layer
+- [x] Professional sample outputs
+- [ ] Real public OSINT connectors (with attribution)
+- [ ] PDF export for briefs & travel packs
+- [ ] Multi-NGO tenancy
+- [ ] Kiswahili interface option
+
+---
+
+## Disclaimer
+
+FocalPoint OS is a **research and coordination tool**. It compiles and structures publicly available information. It does **not** constitute licensed security advice, risk assessment certification, or formal intelligence product.
 
 ---
 
 ## License
-MIT — use it, improve it, deploy it for your NGO.
 
-Built for real field work in Kenya and East Africa.
+MIT
+
+Built for field reality in Kenya and East Africa.
